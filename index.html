@@ -82,14 +82,12 @@ tr:nth-child(even) td {
 tr:nth-child(odd) td { 
     background-color: #121418 !important; 
 }
-/* 1. 時間欄位 - 全部一條線置中 */
 .flight-board th:nth-child(1), 
 .flight-board td:nth-child(1) {
     width: 10% !important;
     text-align: center !important;
 }
 
-/* 2. 目的地欄位 - 全部一條線置左，並給左邊留白 */
 .flight-board th:nth-child(2), 
 .flight-board td:nth-child(2) {
     width: 16% !important;
@@ -97,7 +95,6 @@ tr:nth-child(odd) td {
     padding-left: 20px !important;
 }
 
-/* 3. 航空公司欄位 - 全部一條線置左 */
 .flight-board th:nth-child(3), 
 .flight-board td:nth-child(3) {
     width: 24% !important;
@@ -105,28 +102,24 @@ tr:nth-child(odd) td {
     padding-left: 10px !important;
 }
 
-/* 4. 班機欄位 - 全部一條線置中 (這樣 BR198, CI006 就會完美在 FLIGHT 標題正下方) */
 .flight-board th:nth-child(4), 
 .flight-board td:nth-child(4) {
     width: 12% !important;
     text-align: center !important;
 }
 
-/* 5. 登機時間欄位 - 全部一條線置中 */
 .flight-board th:nth-child(5), 
 .flight-board td:nth-child(5) {
     width: 12% !important;
     text-align: center !important;
 }
 
-/* 6. 登機門欄位 - 全部一條線置中 (最關鍵！讓 C5, A7, B4, -- 變成完美鉛垂線，精準對齊「登機門」三個字的正中央) */
 .flight-board th:nth-child(6), 
 .flight-board td:nth-child(6) {
     width: 10% !important;
     text-align: center !important;
 }
 
-/* 7. 狀態欄位 - 全部一條線置左 */
 .flight-board th:nth-child(7), 
 .flight-board td:nth-child(7) {
     width: 16% !important;
@@ -134,7 +127,6 @@ tr:nth-child(odd) td {
     padding-left: 20px !important;
 }
         
-/* 🎬 桃園機場機械翻牌動畫 */
  @keyframes flipUp {
   0% { transform: rotateX(90deg); opacity: 0; filter: brightness(0.5); }
   40% { transform: rotateX(-15deg); opacity: 0.9; filter: brightness(1.2); }
@@ -144,7 +136,6 @@ tr:nth-child(odd) td {
  td { padding: 16px 15px; font-size: 1.3rem; font-weight: 600; border-bottom: 2px solid #0c0e12; transform-origin: center top; }
   .flipping td { animation: flipUp 1.1s cubic-bezier(0.64, 0, 0.41, 1) forwards; }
 
-        /* 🌊 波浪延遲效果 */
         tr:nth-child(1) td { animation-delay: 0.00s; } tr:nth-child(2) td { animation-delay: 0.08s; }
         tr:nth-child(3) td { animation-delay: 0.16s; } tr:nth-child(4) td { animation-delay: 0.24s; }
         tr:nth-child(5) td { animation-delay: 0.32s; } tr:nth-child(6) td { animation-delay: 0.40s; }
@@ -162,8 +153,8 @@ tr:nth-child(odd) td {
 
 .airline-logo { 
     width: auto; 
-    height: 24px; /* 固定高度，寬度隨圖片比例自動調整 */
-    max-width: 60px; /* 限制最大寬度，避免長條形 Logo 把文字往後推 */
+    height: 24px; 
+    max-width: 60px; 
     object-fit: contain; 
     filter: drop-shadow(0px 1px 2px rgba(0,0,0,0.4)); 
     flex-shrink: 0;
@@ -171,8 +162,7 @@ tr:nth-child(odd) td {
 
         .status-boarding { color: #10b981; } .status-delayed { color: #f43f5e; } .status-normal { color: #ffffff; }   
         .text-center { text-align: center; }
-/* 💡 真實航空公司 Logo 的專用精美樣式 */
-/* 💡 優化真實 Logo 的縮放與最大寬度限制，確保排版整齊不擠壓 */
+
     </style>
 </head>
 <body>
@@ -206,7 +196,6 @@ tr:nth-child(odd) td {
 </body>
 </html>
 <script>
-// 航班基本配置資料 (boardLeadTime 表示要比表定起飛提早幾分鐘登機)
 const flightTemplates = [
     { code: "br", FlightNo: "BR198", SharedFlightNo: "NH5802", AirlineCh: "長榮航空", AirlineEg: "EVA AIR", DestCh: "東京/成田", DestEg: "TOKYO/NARITA", Gate: "C5", StatusCh: "準時", StatusEg: "ON TIME", boardLeadTime: 30 },
     { code: "ci", FlightNo: "CI006", SharedFlightNo: "DL7732", AirlineCh: "中華航空", AirlineEg: "CHINA AIRLINES", DestCh: "洛杉磯", DestEg: "LOS ANGELES", Gate: "A7", StatusCh: "請辦理報到", StatusEg: "CHECK-IN OPEN", boardLeadTime: 40 },
@@ -284,15 +273,11 @@ function renderSyncBoard() {
                // 💡 航空標誌圖片路徑設定
         let logoUrl = `./img/${flight.code}.png`;
 
-        // 3. 渲染 TD 內容 (補上動畫 class 並且防範圖片不存在時的防錯)
             tr.innerHTML = `
-            <!-- 1. 時間 (置中) -->
             <td class="time-col flipping-td" style="width: 10%; text-align: center;">${displayTime}</td>
             
-            <!-- 2. 目的地 (置左) -->
             <td class="flipping-td" style="width: 16%; text-align: left; padding-left: 10px;">${destination}</td>
             
-            <!-- 3. 航空公司 (置左) -->
             <td class="flipping-td" style="width: 24%; text-align: left;">
                 <div style="display: flex; align-items: center; gap: 16px; justify-content: flex-start; height: 100%;">
                     <div class="airline-cell" style="width: 45px; display: flex; justify-content: center; align-items: center; flex-shrink: 0;">
@@ -304,27 +289,21 @@ function renderSyncBoard() {
                 </div>
             </td>
 
-            <!-- 4. 班機 (置中) -->
             <td class="flight-col flipping-td" style="width: 12%; text-align: center;">${flightNumber}</td>
             
-            <!-- 5. 登機時間 (置中) -->
             <td class="board-time-col flipping-td" style="width: 12%; text-align: center;">${displayBoardTime}</td>
             
-            <!-- 6. 登機門 (置中！這樣 C5, A7, B4 就會通通排成一條直線，並對齊上面的 GATE) -->
             <td class="flipping-td" style="width: 10%; text-align: center;">${flight.Gate}</td>
             
-            <!-- 7. 狀態 (置左) -->
             <td class="flipping-td" style="width: 16%; text-align: left; padding-left: 10px;"><span class="${statusClass}">${statusText}</span></td>
         `;
     tbody.appendChild(tr);
-
-// 核心初始化與定時器啟動
+    });
 setInterval(updateClock, 1000);
 updateClock();
 renderSyncBoard();
 
-// 每 10 秒自動交叉輪換中英介面
-setInterval(() => {
+setInterval(()) => {
     currentLanguage = currentLanguage === "zh" ? "en" : "zh";
     renderSyncBoard();
 }, 10000);
