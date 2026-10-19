@@ -214,7 +214,6 @@ let currentLanguage = "zh";
 let globalHours = new Date().getHours();
 let globalMinutes = new Date().getMinutes();
 
-function updateClock() {
     // 🎵 在最外層（updateClock 函數上方）宣告您的飛機/登機音效物件
 const airplaneSound = new Audio("./airplane_takeoff.mp3");
 airplaneSound.volume = 0.7; // 設定音量 (0.0 到 1.0)
@@ -265,8 +264,6 @@ function updateClock() {
     if (now.getSeconds() === 0 && globalMinutes === 0) {
         playedTimes.clear();
     }
-}
-
 }
 
 function renderSyncBoard() {
