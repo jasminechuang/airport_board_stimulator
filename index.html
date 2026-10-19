@@ -215,12 +215,58 @@ let globalHours = new Date().getHours();
 let globalMinutes = new Date().getMinutes();
 
 function updateClock() {
+    // 🎵 在最外層（updateClock 函數上方）宣告您的飛機/登機音效物件
+const airplaneSound = new Audio("./airplane_takeoff.mp3");
+airplaneSound.volume = 0.7; // 設定音量 (0.0 到 1.0)
+
+// 用來記錄哪些時間（小時:分鐘）已經播放過，防止在同一分鐘的 60 秒內重疊播放
+let playedTimes = new Set();
+
+function updateClock() {
     const now = new Date();
-    globalHours = now.getHours(); globalMinutes = now.getMinutes();
+    globalHours = now.getHours(); 
+    globalMinutes = now.getMinutes();
     const clockEl = document.getElementById('airport-clock');
+    
+    // 1. 產生目前右上角時間的字串（格式為 "HH:MM"，例如 "04:18"）
+    const currentClockTimeStr = String(globalHours).padStart(2, '0') + ":" + String(globalMinutes).padStart(2, '0');
+    
+    // 這是您原本更新右上角時鐘顯示（含秒數）的程式碼
     if (clockEl) {
-        clockEl.innerText = String(globalHours).padStart(2, '0') + ":" + String(globalMinutes).padStart(2, '0') + ":" + String(now.getSeconds()).padStart(2, '0');
+        clockEl.innerText = currentClockTimeStr + ":" + String(now.getSeconds()).padStart(2, '0');
     }
+
+    // 🎵 2. 核心比對邏輯：使用與第 261 行完全相同的公式，算出每班航班看板上顯示的時間
+    flightTemplates.forEach((flight, index) => {
+        let flightMinutes = globalMinutes + (index * 7) + 3;
+        let flightHours = globalHours + Math.floor(flightMinutes / 60);
+        flightMinutes = flightMinutes % 60;
+        flightHours = flightHours % 24;
+
+        // 算出該航班在畫面上對應顯示的 TIME 字串（格式為 "HH:MM"）
+        const flightTimeStr = String(flightHours).padStart(2, '0') + ":" + String(flightMinutes).padStart(2, '0');
+
+        // 當「目前時鐘的分鐘」精準等於「看板上某班機的分鐘」，且這一分鐘內還沒播放過音效時
+        if (currentClockTimeStr === flightTimeStr && !playedTimes.has(currentClockTimeStr)) {
+            
+            // 播放飛機音效！
+            airplaneSound.play().then(() => {
+                console.log(`🎵 班機時間到了 (${flightTimeStr})！成功播放飛機音效！`);
+            }).catch(error => {
+                console.log("提示：由於瀏覽器安全機制，需要先點擊網頁任意地方，定時音效才會開始運作。");
+            });
+
+            // 將這個時間點存入已播放清單，防止在這一分鐘的 60 秒內重複觸發 60 次
+            playedTimes.add(currentClockTimeStr);
+        }
+    });
+
+    // 每到整點自動清空已播放紀錄，保持記憶體乾淨
+    if (now.getSeconds() === 0 && globalMinutes === 0) {
+        playedTimes.clear();
+    }
+}
+
 }
 
 function renderSyncBoard() {
