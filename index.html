@@ -299,11 +299,12 @@ function renderSyncBoard() {
         `;
     tbody.appendChild(tr);
     });
+}
 setInterval(updateClock, 1000);
 updateClock();
 renderSyncBoard();
 
-setInterval(()) => {
+setInterval(() => {
     currentLanguage = currentLanguage === "zh" ? "en" : "zh";
     renderSyncBoard();
 }, 10000);
