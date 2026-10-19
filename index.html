@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>桃園國際機場即時航班看板 (純淨廣播版)</title>
+    <title>雲端國際機場即時航班看板 (純淨廣播版)</title>
     <style>
         body {
             background: #121418 !important; 
@@ -272,14 +272,14 @@ function renderSyncBoard() {
 
     if (currentLanguage === "zh") {
         document.getElementById("main-title").innerText = "出發航班";
-        document.getElementById("sub-title").innerText = "桃園國際機場 FIDS 系統";
+        document.getElementById("sub-title").innerText = "雲端國際機場 FIDS 系統";
         document.getElementById("th-time").innerText = "時間"; document.getElementById("th-dest").innerText = "目的地";
         document.getElementById("th-airline").innerText = "航空公司"; document.getElementById("th-flight").innerText = "班機";
         document.getElementById("th-board-time").innerText = "登機時間"; document.getElementById("th-gate").innerText = "登機門";
         document.getElementById("th-status").innerText = "狀態";
     } else {
         document.getElementById("main-title").innerText = "DEPARTURES";
-        document.getElementById("sub-title").innerText = "Taoyuan Int'l Airport FIDS System";
+        document.getElementById("sub-title").innerText = "Cloud Int'l Airport FIDS System";
         document.getElementById("th-time").innerText = "TIME"; document.getElementById("th-dest").innerText = "DESTINATION";
         document.getElementById("th-airline").innerText = "AIRLINE"; document.getElementById("th-flight").innerText = "FLIGHT";
         document.getElementById("th-board-time").innerText = "BOARDING TIME"; document.getElementById("th-gate").innerText = "GATE";
