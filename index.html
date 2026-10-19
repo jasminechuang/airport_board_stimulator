@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>桃園國際機場即時航班看板 (純淨廣播版)</title>
+    <style>
+        body {
+            background: #121418 !important; 
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1300px;
+            margin: 0 auto 10px auto;
+            padding-bottom: 20px;
+        }
+        .title-group h1 { font-size: 2.2rem; font-weight: 700; letter-spacing: 2px; margin: 0; }
+        .title-group .eng-title { font-size: 1.1rem; color: #7d8795; letter-spacing: 1px; margin-top: 5px; }
+        
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        /* 🔊 音效開關按鈕 */
+        .sound-btn {
+            background-color: #1f2937;
+            color: #10b981;
+            border: 2px solid #374151;
+            padding: 10px 18px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .sound-btn.muted { color: #f43f5e; border-color: #f43f5e; }
+        .sound-btn:hover { background-color: #2d3748; transform: translateY(-2px); }
+
+        #airport-clock {
+            color: #00ffcc;
+            font-size: 2.4rem;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            background-color: #161b22;
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: 1px solid #30363d;
+        }
+        .flight-board { 
+            width: 100%; 
+            max-width: 1300px; 
+            margin: 0 auto; 
+            border-collapse: 
+            collapse; 
+            border-radius: 12px; 
+            overflow: hidden;
+        }
+      th { 
+    background-color: #0c0e12; 
+    color: #9aa5b5; 
+    padding: 18px 15px; 
+    text-align: left; 
+    font-size: 1rem; 
+    border-bottom: 3px solid #181d24; 
+}
+
+tr:nth-child(even) td { 
+    background-color: #121418 !important; 
+}
+
+tr:nth-child(odd) td { 
+    background-color: #121418 !important; 
+}
+/* 1. 時間欄位 - 全部一條線置中 */
+.flight-board th:nth-child(1), 
+.flight-board td:nth-child(1) {
+    width: 10% !important;
+    text-align: center !important;
+}
+
+/* 2. 目的地欄位 - 全部一條線置左，並給左邊留白 */
+.flight-board th:nth-child(2), 
+.flight-board td:nth-child(2) {
+    width: 16% !important;
+    text-align: left !important;
+    padding-left: 20px !important;
+}
+
+/* 3. 航空公司欄位 - 全部一條線置左 */
+.flight-board th:nth-child(3), 
+.flight-board td:nth-child(3) {
+    width: 24% !important;
+    text-align: left !important;
+    padding-left: 10px !important;
+}
+
+/* 4. 班機欄位 - 全部一條線置中 (這樣 BR198, CI006 就會完美在 FLIGHT 標題正下方) */
+.flight-board th:nth-child(4), 
+.flight-board td:nth-child(4) {
+    width: 12% !important;
+    text-align: center !important;
+}
+
+/* 5. 登機時間欄位 - 全部一條線置中 */
+.flight-board th:nth-child(5), 
+.flight-board td:nth-child(5) {
+    width: 12% !important;
+    text-align: center !important;
+}
+
+/* 6. 登機門欄位 - 全部一條線置中 (最關鍵！讓 C5, A7, B4, -- 變成完美鉛垂線，精準對齊「登機門」三個字的正中央) */
+.flight-board th:nth-child(6), 
+.flight-board td:nth-child(6) {
+    width: 10% !important;
+    text-align: center !important;
+}
+
+/* 7. 狀態欄位 - 全部一條線置左 */
+.flight-board th:nth-child(7), 
+.flight-board td:nth-child(7) {
+    width: 16% !important;
+    text-align: left !important;
+    padding-left: 20px !important;
+}
+        
+/* 🎬 桃園機場機械翻牌動畫 */
+ @keyframes flipUp {
+  0% { transform: rotateX(90deg); opacity: 0; filter: brightness(0.5); }
+  40% { transform: rotateX(-15deg); opacity: 0.9; filter: brightness(1.2); }
+  0% { transform: rotateX(10deg); opacity: 1; }
+  100% { transform: rotateX(0deg); opacity: 1; filter: brightness(1); }
+        }
+ td { padding: 16px 15px; font-size: 1.3rem; font-weight: 600; border-bottom: 2px solid #0c0e12; transform-origin: center top; }
+  .flipping td { animation: flipUp 1.1s cubic-bezier(0.64, 0, 0.41, 1) forwards; }
+
+        /* 🌊 波浪延遲效果 */
+        tr:nth-child(1) td { animation-delay: 0.00s; } tr:nth-child(2) td { animation-delay: 0.08s; }
+        tr:nth-child(3) td { animation-delay: 0.16s; } tr:nth-child(4) td { animation-delay: 0.24s; }
+        tr:nth-child(5) td { animation-delay: 0.32s; } tr:nth-child(6) td { animation-delay: 0.40s; }
+        tr:nth-child(7) td { animation-delay: 0.48s; } tr:nth-child(8) td { animation-delay: 0.56s; }
+        tr:nth-child(9) td { animation-delay: 0.64s; } tr:nth-child(10) td { animation-delay: 0.72s; }
+
+        .time-col { color: #ffd13b; font-family: 'Courier New', monospace; font-size: 1.4rem; }
+        .flight-col { color: #ffd13b; letter-spacing: 1px; }
+        .airline-cell { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    white-space: nowrap; 
+}
+
+.airline-logo { 
+    width: auto; 
+    height: 24px; /* 固定高度，寬度隨圖片比例自動調整 */
+    max-width: 60px; /* 限制最大寬度，避免長條形 Logo 把文字往後推 */
+    object-fit: contain; 
+    filter: drop-shadow(0px 1px 2px rgba(0,0,0,0.4)); 
+    flex-shrink: 0;
+}
+
+        .status-boarding { color: #10b981; } .status-delayed { color: #f43f5e; } .status-normal { color: #ffffff; }   
+        .text-center { text-align: center; }
+/* 💡 真實航空公司 Logo 的專用精美樣式 */
+/* 💡 優化真實 Logo 的縮放與最大寬度限制，確保排版整齊不擠壓 */
+    </style>
+</head>
+<body>
+
+<div class="header-container">
+    <div class="title-group">
+        <h1 id="main-title">出發航班</h1>
+        <div id="sub-title" color= #7d8795; margin-top= 5px;">桃園國際機場 FIDS 系統</div>
+    </div>
+    <div id="airport-clock">00:00:00</div>
+</div>
+
+<table class="flight-board">
+    <thead>
+        <tr>
+            <th id="th-time" style="width: 10%;">時間</th>
+            <th id="th-dest" style="width: 16%;">目的地</th>
+            <th id="th-airline" style="width: 24%;">航空公司</th> 
+            <th id="th-flight" style="width: 12%;">班機</th>
+            <th id="th-board-time" style="width: 12%;">登機時間</th>
+            <th id="th-gate" style="width: 10%;">登機門</th>
+            <th id="th-status" style="width: 16%;">狀態</th>
+        </tr>
+    </thead>
+
+
+    <tbody id="flight-data-rows"></tbody>
+</table>
+</script>
+
+</body>
+</html>
+<script>
+// 航班基本配置資料 (boardLeadTime 表示要比表定起飛提早幾分鐘登機)
+const flightTemplates = [
+    { code: "br", FlightNo: "BR198", SharedFlightNo: "NH5802", AirlineCh: "長榮航空", AirlineEg: "EVA AIR", DestCh: "東京/成田", DestEg: "TOKYO/NARITA", Gate: "C5", StatusCh: "準時", StatusEg: "ON TIME", boardLeadTime: 30 },
+    { code: "ci", FlightNo: "CI006", SharedFlightNo: "DL7732", AirlineCh: "中華航空", AirlineEg: "CHINA AIRLINES", DestCh: "洛杉磯", DestEg: "LOS ANGELES", Gate: "A7", StatusCh: "請辦理報到", StatusEg: "CHECK-IN OPEN", boardLeadTime: 40 },
+    { code: "jx", FlightNo: "JX802", SharedFlightNo: "AS4012", AirlineCh: "星宇航空", AirlineEg: "STARLUX AIRLINES", DestCh: "大阪/關西", DestEg: "OSAKA/KANSAI", Gate: "B4", StatusCh: "登機中", StatusEg: "BOARDING", boardLeadTime: 30 },
+    { code: "tr", FlightNo: "TR897", SharedFlightNo: "SQ8897", AirlineCh: "酷航", AirlineEg: "SCOOT", DestCh: "新加坡", DestEg: "SINGAPORE", Gate: "B1", StatusCh: "最後提示", StatusEg: "FINAL CALL", boardLeadTime: 35 },
+    { code: "cx", FlightNo: "CX451", SharedFlightNo: "AA8912", AirlineCh: "國泰航空", AirlineEg: "CATHAY PACIFIC", DestCh: "香港", DestEg: "HONG KONG", Gate: "B9", StatusCh: "已起飛", StatusEg: "DEPARTED", boardLeadTime: 30 },
+    { code: "jl", FlightNo: "JL802", SharedFlightNo: "AA8402", AirlineCh: "日本航空", AirlineEg: "JAPAN AIRLINES", DestCh: "東京/成田", DestEg: "TOKYO/NARITA", Gate: "D3", StatusCh: "改時 01:35", StatusEg: "DELAY 01:35", boardLeadTime: 30 },
+    { code: "ke", FlightNo: "KE186", SharedFlightNo: "CI9916", AirlineCh: "大韓航空", AirlineEg: "KOREAN AIR", DestCh: "首爾/仁川", DestEg: "SEOUL/INCHEON", Gate: "--", StatusCh: "準時", StatusEg: "ON TIME", boardLeadTime: 40 },
+    { code: "br", FlightNo: "BR225", SharedFlightNo: "SQ5825", AirlineCh: "長榮航空", AirlineEg: "EVA AIR", DestCh: "新加坡", DestEg: "SINGAPORE", Gate: "C2", StatusCh: "取消", StatusEg: "CANCELLED", boardLeadTime: 35 },
+    { code: "ci", FlightNo: "CI753", SharedFlightNo: "GA9753", AirlineCh: "中華航空", AirlineEg: "CHINA AIRLINES", DestCh: "馬尼拉", DestEg: "MANILA", Gate: "A9", StatusCh: "準時", StatusEg: "ON TIME", boardLeadTime: 30 },
+    { code: "jx", FlightNo: "JX721", SharedFlightNo: "MH9721", AirlineCh: "星宇航空", AirlineEg: "STARLUX AIRLINES", DestCh: "檳城", DestEg: "PENANG", Gate: "B6", StatusCh: "依時", StatusEg: "SCHEDULED", boardLeadTime: 30 }
+];
+
+
+let currentLanguage = "zh";
+let globalHours = new Date().getHours();
+let globalMinutes = new Date().getMinutes();
+
+function updateClock() {
+    const now = new Date();
+    globalHours = now.getHours(); globalMinutes = now.getMinutes();
+    const clockEl = document.getElementById('airport-clock');
+    if (clockEl) {
+        clockEl.innerText = String(globalHours).padStart(2, '0') + ":" + String(globalMinutes).padStart(2, '0') + ":" + String(now.getSeconds()).padStart(2, '0');
+    }
+}
+
+function renderSyncBoard() {
+    const tbody = document.getElementById("flight-data-rows");
+    if (!tbody) return;
+
+    if (currentLanguage === "zh") {
+        document.getElementById("main-title").innerText = "出發航班";
+        document.getElementById("sub-title").innerText = "桃園國際機場 FIDS 系統";
+        document.getElementById("th-time").innerText = "時間"; document.getElementById("th-dest").innerText = "目的地";
+        document.getElementById("th-airline").innerText = "航空公司"; document.getElementById("th-flight").innerText = "班機";
+        document.getElementById("th-board-time").innerText = "登機時間"; document.getElementById("th-gate").innerText = "登機門";
+        document.getElementById("th-status").innerText = "狀態";
+    } else {
+        document.getElementById("main-title").innerText = "DEPARTURES";
+        document.getElementById("sub-title").innerText = "Taoyuan Int'l Airport FIDS System";
+        document.getElementById("th-time").innerText = "TIME"; document.getElementById("th-dest").innerText = "DESTINATION";
+        document.getElementById("th-airline").innerText = "AIRLINE"; document.getElementById("th-flight").innerText = "FLIGHT";
+        document.getElementById("th-board-time").innerText = "BOARDING TIME"; document.getElementById("th-gate").innerText = "GATE";
+        document.getElementById("th-status").innerText = "STATUS";
+    }
+
+    tbody.innerHTML = "";
+    flightTemplates.forEach((flight, index) => {
+        const tr = document.createElement("tr");
+        tr.classList.add("flipping"); 
+        let flightMinutes = globalMinutes + (index * 7) + 3;
+        let flightHours = globalHours + Math.floor(flightMinutes / 60);
+        flightMinutes = flightMinutes % 60; flightHours = flightHours % 24;
+        const displayTime = String(flightHours).padStart(2, '0') + ":" + String(flightMinutes).padStart(2, '0');
+
+        let boardTotalMinutes = (flightHours * 60 + flightMinutes) - flight.boardLeadTime;
+        if (boardTotalMinutes < 0) boardTotalMinutes += 1440;
+        let boardHours = Math.floor(boardTotalMinutes / 60) % 24;
+        let boardMinutes = boardTotalMinutes % 60;
+        const displayBoardTime = String(boardHours).padStart(2, '0') + ":" + String(boardMinutes).padStart(2, '0');
+
+        const destination = currentLanguage === "zh" ? flight.DestCh : flight.DestEg;
+        const airlineName = currentLanguage === "zh" ? flight.AirlineCh : flight.AirlineEg;
+        const flightNumber = currentLanguage === "zh" ? flight.FlightNo : flight.SharedFlightNo;
+        const statusText = currentLanguage === "zh" ? flight.StatusCh : flight.StatusEg;
+
+        let statusClass = "status-normal";
+        const upperStatus = statusText.toUpperCase();
+        if (upperStatus.includes("登機") || upperStatus.includes("BOARDING") || upperStatus.includes("報到") || upperStatus.includes("CHECK")) statusClass = "status-boarding";
+        else if (upperStatus.includes("最後") || upperStatus.includes("FINAL")) statusClass = "status-finalcall";
+        else if (upperStatus.includes("改時") || upperStatus.includes("DELAY")) statusClass = "status-delayed";
+        else if (upperStatus.includes("起飛") || upperStatus.includes("DEPARTED")) statusClass = "status-departed";
+
+               // 💡 航空標誌圖片路徑設定
+        let logoUrl = `./img/${flight.code}.png`;
+
+        // 3. 渲染 TD 內容 (補上動畫 class 並且防範圖片不存在時的防錯)
+            tr.innerHTML = `
+            <!-- 1. 時間 (置中) -->
+            <td class="time-col flipping-td" style="width: 10%; text-align: center;">${displayTime}</td>
+            
+            <!-- 2. 目的地 (置左) -->
+            <td class="flipping-td" style="width: 16%; text-align: left; padding-left: 10px;">${destination}</td>
+            
+            <!-- 3. 航空公司 (置左) -->
+            <td class="flipping-td" style="width: 24%; text-align: left;">
+                <div style="display: flex; align-items: center; gap: 16px; justify-content: flex-start; height: 100%;">
+                    <div class="airline-cell" style="width: 45px; display: flex; justify-content: center; align-items: center; flex-shrink: 0;">
+                        <img class="airline-logo" src="${logoUrl}" alt="" style="max-height: 26px; max-width: 100%; width: auto; height: auto; display: block; object-fit: contain;">
+                    </div>
+                    <div style="display: flex; flex-direction: column; justify-content: center;">
+                        <span style="color: #ffffff; font-weight: bold; font-size: 1.1rem; line-height: 1;">${airlineName}</span>
+                    </div>
+                </div>
+            </td>
+
+            <!-- 4. 班機 (置中) -->
+            <td class="flight-col flipping-td" style="width: 12%; text-align: center;">${flightNumber}</td>
+            
+            <!-- 5. 登機時間 (置中) -->
+            <td class="board-time-col flipping-td" style="width: 12%; text-align: center;">${displayBoardTime}</td>
+            
+            <!-- 6. 登機門 (置中！這樣 C5, A7, B4 就會通通排成一條直線，並對齊上面的 GATE) -->
+            <td class="flipping-td" style="width: 10%; text-align: center;">${flight.Gate}</td>
+            
+            <!-- 7. 狀態 (置左) -->
+            <td class="flipping-td" style="width: 16%; text-align: left; padding-left: 10px;"><span class="${statusClass}">${statusText}</span></td>
+        `;
+    tbody.appendChild(tr);
+
+// 核心初始化與定時器啟動
+setInterval(updateClock, 1000);
+updateClock();
+renderSyncBoard();
+
+// 每 10 秒自動交叉輪換中英介面
+setInterval(() => {
+    currentLanguage = currentLanguage === "zh" ? "en" : "zh";
+    renderSyncBoard();
+}, 10000);
+</script>
+</body>
+</html>
